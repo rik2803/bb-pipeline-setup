@@ -2,7 +2,11 @@
 
 ## What this does
 
-The repository contins a script that automatically configures a BB pipeline for a given repository, based on a simple configuration file you provide.
+The repository contains a script that automatically configures a BB pipeline
+for a given repository, based on a simple configuration file you provide.
+
+Without this script, you would risk wrist injury as a result of the repeated
+clicking, copying and pasting in the BB Web UI.
 
 ## The configuration file
 
