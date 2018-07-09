@@ -1,0 +1,30 @@
+image: maven:3-jdk-8
+pipelines:
+  custom:
+    build_docker_artifact_and_publish_to_ecr:
+      - step:
+          caches:
+            - maven
+          script:
+            - bash makesettings.sh
+            - mvn -P docker -s /settings.xml -e install
+      - step:
+          name: Deploy to dev (test)
+          deployment: test
+          trigger: automatic
+          script:
+            - git clone https://github.com/rik2803/bb-docker-aws-utils.git
+            - export REMOTE_REPO_SLUG="{{ repo_slug }}.config.dev"
+            - export REMOTE_REPO_OWNER="{{ repo_owner }}"
+            - bb-docker-aws-utils/sync_trigger_bb_build.bash
+      - step:
+          name: Deploy to prd (production)
+          deployment: production
+          trigger: manual
+          script:
+            - git clone https://github.com/rik2803/bb-docker-aws-utils.git
+            - export REMOTE_REPO_SLUG="{{ repo_slug }}.config.prd"
+            - export REMOTE_REPO_OWNER="{{ repo_owner }}"
+            - bb-docker-aws-utils/sync_trigger_bb_build.bash
+options:
+  docker: true

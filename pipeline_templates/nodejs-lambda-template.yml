@@ -1,0 +1,14 @@
+image: node:8
+pipelines:
+  custom:
+    build_lambda_function_package_and_publish_to_s3:
+      - step:
+          name: Build the lambda function package publish to S3
+          caches:
+            - node
+          script:
+            - git clone https://github.com/rik2803/bb-docker-aws-utils.git
+            - source bb-docker-aws-utils/lib.bash
+            - export S3_DEST_BUCKET={{ s3_dest_bucket }}
+            - export LAMBDA_FUNCTION_NAME={{ lambda_function_name }}
+            - s3_lambda_build_and_push

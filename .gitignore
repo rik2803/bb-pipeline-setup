@@ -1,0 +1,5 @@
+setenv.bash
+*.log
+examples
+.idea
+MYREADME.md

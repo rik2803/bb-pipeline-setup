@@ -1,0 +1,28 @@
+image: python:3
+pipelines:
+  custom:
+    build_deploy_docker:
+      - step:
+          name: Build application image
+          script:
+            - git clone https://github.com/rik2803/bb-docker-aws-utils.git
+            - bb-docker-aws-utils/build-and-push-application-image.bash
+      - step:
+          name: Deploy to dev
+          script:
+            - git clone https://github.com/rik2803/bb-docker-aws-utils.git
+            - export REMOTE_REPO_SLUG="{{ repo_slug }}.config.dev"
+            - export REMOTE_REPO_OWNER="{{ repo_owner }}"
+            - bb-docker-aws-utils/sync_trigger_bb_build.bash
+      - step:
+          name: Deploy to Prod
+          deployment: production
+          trigger: manual
+          script:
+            - git clone https://github.com/rik2803/bb-docker-aws-utils.git
+            - export REMOTE_REPO_SLUG="{{ repo_slug }}.config.prd"
+            - export REMOTE_REPO_OWNER="{{ repo_owner }}"
+            - bb-docker-aws-utils/sync_trigger_bb_build.bash
+
+options:
+  docker: true
