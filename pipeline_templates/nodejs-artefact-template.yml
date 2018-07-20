@@ -9,12 +9,6 @@ pipelines:
           script:
             - git clone https://github.com/rik2803/bb-aws-utils.git
             - source bb-aws-utils/lib.bash
-            - export BUILD_COMMAND="npm i && npm run build"
-            - export PAYLOAD_LOCATION=build
-            - export S3_ARTIFACT_BUCKET=NAME_OF_BUCKET_HERE
-            - export ARTIFACT_NAME=NAME_OF_ARTIFACT_HERE
-            - export CI=false
-            - install_awscli
             - s3_artifact
       - step:
           name: Deploy to dev (test)
