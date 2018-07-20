@@ -1,0 +1,36 @@
+image: node:9
+pipelines:
+  custom:
+    build_artifact_and_publish_to_s3:
+      - step:
+          name: Build project and upload artifact to S3
+          caches:
+            - node
+          script:
+            - git clone https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib.bash
+            - export BUILD_COMMAND="npm i && npm run build"
+            - export PAYLOAD_LOCATION=build
+            - export S3_ARTIFACT_BUCKET=NAME_OF_BUCKET_HERE
+            - export ARTIFACT_NAME=NAME_OF_ARTIFACT_HERE
+            - export CI=false
+            - install_awscli
+            - s3_artifact
+      - step:
+          name: Deploy to dev (test)
+          deployment: test
+          trigger: automatic
+          script:
+            - git clone https://github.com/rik2803/bb-aws-utils.git
+            - export REMOTE_REPO_SLUG="{{ repo_slug }}.config.dev"
+            - export REMOTE_REPO_OWNER="{{ repo_owner }}" 
+            - bb-aws-utils/sync_trigger_bb_build.bash
+      - step:
+          name: Deploy to prd (production)
+          deployment: production
+          trigger: manual
+          script:
+            - git clone https://github.com/rik2803/bb-aws-utils.git
+            - export REMOTE_REPO_SLUG="{{ repo_slug }}.config.dev"
+            - export REMOTE_REPO_OWNER="{{ repo_owner }}" 
+            - bb-aws-utils/sync_trigger_bb_build.bash
