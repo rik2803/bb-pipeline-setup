@@ -1,0 +1,10 @@
+image: node:9
+pipelines:
+  custom:
+    build_and_deploy:
+      - step:
+          name: Deploy to S3
+          script:
+            - git clone https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib.bash
+            - s3_deploy
