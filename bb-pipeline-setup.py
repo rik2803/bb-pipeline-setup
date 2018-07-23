@@ -244,6 +244,4 @@ class bb_pipeline_config:
 
         self.args = parser.parse_args()
 
-
-
 bb_pipeline_config()
