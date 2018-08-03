@@ -79,7 +79,7 @@ class repo:
         self.logger.debug(response.content)
         dictresponse = json.loads(response.content)
         ### Search for path equals bitbucket-pipelines.yml in the list dictresponse['values']
-        if next((item for item in dictresponse['values'] if item["path"] == "bitbucket-pipelines.yml"), None) is None:
+        if 'values' not in dictresponse.keys() or next((item for item in dictresponse['values'] if item["path"] == "bitbucket-pipelines.yml"), None) is None:
             self.logger.info('No bitbucket-pipelines.yml found in repository')
             return False
         else:
