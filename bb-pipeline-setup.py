@@ -11,10 +11,11 @@ import jinja2
 
 class repo:
 
-    def __init__(self, logger, repo_slug, repo_owner):
+    def __init__(self, logger, repo_slug, repo_owner, project_key):
         self.logger = logger
         self.repo_slug = repo_slug
         self.repo_owner = repo_owner
+        self.project_key = project_key
         self.pipeline_variables = None
 
         self.check_environment()
@@ -41,6 +42,23 @@ class repo:
             self.logger.info('Repo exists')
             return True
 
+    def repo_create(self):
+        headers = {'Content-type': 'application/json'}
+        if self.project_key is None:
+            payload = { "scm": "git", "is_private": "true" }
+        else:
+            payload = { "scm": "git", "is_private": "true", "project": { "key": self.project_key } }
+
+        response = requests.put(self.api_endpoint_base, auth=(self.bb_user, self.bb_app_passwd), data=json.dumps(payload), headers=headers)
+        dictresponse = json.loads(response.content)
+        if response.status_code != 200:
+            self.logger.error("Error creating repo: {}".format(response.status_code))
+            self.logger.error("{}".format(json.dumps(payload)))
+            self.logger.error(dictresponse)
+            return False
+        else:
+            self.logger.info("Repo successfully created")
+            return True
 
     def is_pipeline_enabled(self):
         if self.repo_exists():
@@ -165,7 +183,17 @@ class bb_pipeline_config:
         if self.args.verbose:
             self.logger.setLevel(logging.DEBUG)
 
-        self.repo = repo(self.logger, self.config['repo']['slug'], self.config['repo']['owner'])
+        if 'repo' in self.config and 'project_key' in self.config['repo']:
+            self.repo = repo(self.logger, self.config['repo']['slug'], self.config['repo']['owner'], self.config['repo']['project_key'])
+        else:
+            self.repo = repo(self.logger, self.config['repo']['slug'], self.config['repo']['owner'], None)
+
+        if not self.repo.repo_exists():
+            if not self.repo.repo_create():
+                self.logger.error("Error creating repo - giving up")
+                exit(1)
+            else:
+                self.logger.info("Repo successfully created")
 
         if not self.repo.has_pipelinefile():
             self.repo.create_pipeline_file(self.create_bb_file_from_template(self.config['pipeline_template']))
