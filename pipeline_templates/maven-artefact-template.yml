@@ -13,18 +13,18 @@ pipelines:
           deployment: test
           trigger: automatic
           script:
-            - git clone https://github.com/rik2803/bb-docker-aws-utils.git
+            - git clone https://github.com/rik2803/bb-aws-utils.git
             - export REMOTE_REPO_SLUG="{{ repo_slug }}.config.dev"
             - export REMOTE_REPO_OWNER="{{ repo_owner }}"
-            - bb-docker-aws-utils/sync_trigger_bb_build.bash
+            - bb-aws-utils/sync_trigger_bb_build.bash
       - step:
           name: Deploy to prd (production)
           deployment: production
           trigger: manual
           script:
-            - git clone https://github.com/rik2803/bb-docker-aws-utils.git
+            - git clone https://github.com/rik2803/bb-aws-utils.git
             - export REMOTE_REPO_SLUG="{{ repo_slug }}.config.prd"
             - export REMOTE_REPO_OWNER="{{ repo_owner }}"
-            - bb-docker-aws-utils/sync_trigger_bb_build.bash
+            - bb-aws-utils/sync_trigger_bb_build.bash
 options:
   docker: true

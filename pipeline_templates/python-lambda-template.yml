@@ -7,8 +7,8 @@ pipelines:
           caches:
             - node
           script:
-            - git clone https://github.com/rik2803/bb-docker-aws-utils.git
-            - source bb-docker-aws-utils/lib.bash
+            - git clone https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib.bash
             - export S3_DEST_BUCKET={{ s3_dest_bucket }}
             - export LAMBDA_FUNCTION_NAME={{ lambda_function_name }}
             - s3_lambda_build_and_push

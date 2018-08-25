@@ -6,13 +6,13 @@ pipelines:
       - step:
           name: Build and push Docker deploy image
           script:
-            - git clone https://github.com/rik2803/bb-docker-aws-utils.git
-            - bb-docker-aws-utils/build-and-push-docker-image.bash
+            - git clone https://github.com/rik2803/bb-aws-utils.git
+            - bb-aws-utils/build-and-push-docker-image.bash
       - step:
           name: Deploy latest version of image
           script:
-            - git clone https://github.com/rik2803/bb-docker-aws-utils.git
-            - bb-docker-aws-utils/deploy-docker-image.bash
+            - git clone https://github.com/rik2803/bb-aws-utils.git
+            - bb-aws-utils/deploy-docker-image.bash
 
 options:
   docker: true
