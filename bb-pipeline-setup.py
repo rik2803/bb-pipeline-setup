@@ -35,7 +35,7 @@ class repo:
         response = requests.get(self.api_endpoint_base, auth=(self.bb_user, self.bb_app_passwd))
         dictresponse = json.loads(response.content)
         if response.status_code != 200:
-            self.logger.error("Repo does not exists.")
+            self.logger.error("Repo does not exist.")
             self.logger.error(dictresponse)
             return False
         else:
@@ -72,7 +72,7 @@ class repo:
                 self.logger.info("Pipeline enabled is %s" % dictresponse['enabled'])
                 return dictresponse['enabled']
         else:
-            self.logger.warning('Repository does not exist')
+            self.logger.warning('Repository does not exist.')
             return False
 
     def enable_pipeline(self):
@@ -120,7 +120,7 @@ class repo:
 
     def get_pipeline_variables(self):
         if self.pipeline_variables is None:
-            response = requests.get(self.api_endpoint_base + '/pipelines_config/variables/',
+            response = requests.get(self.api_endpoint_base + '/pipelines_config/variables/?pagelen=99',
                                     auth=(self.bb_user, self.bb_app_passwd))
             self.logger.debug(response.status_code)
             self.logger.debug(response.content)
@@ -129,12 +129,13 @@ class repo:
 
 
     def pipeline_variable_exists(self, name):
-        if next((item for item in self.pipeline_variables if item['key'] == name), None) is None:
-            self.logger.info("Pipeline variable %s does not exist." % name)
-            return False
-        else:
-            self.logger.info("Pipeline variable %s does exists." % name)
-            return True
+        for var in self.pipeline_variables:
+            if var['key'] == name:
+                self.logger.info("Pipeline variable %s does exist." % name)
+                return True
+
+        self.logger.info("Pipeline variable %s does not exist." % name)
+        return False
 
     def update_pipeline_variable(self, name, value, is_secret):
         for var in self.pipeline_variables:
@@ -220,10 +221,10 @@ class bb_pipeline_config:
             self.logger.info("Configuration contains private and public key, continue to add the key to the pipeline config")
             self.repo.ssh_add_keypair(self.config['ssh']['privatekey'], self.config['ssh']['publickey'])
         else:
-            self.logger.info("Configuration does not contains private or public key, skip adding ssh keypair")
+            self.logger.info("Configuration does not contain private or public key, skip adding ssh keypair")
 
     def add_pipeline_variables(self):
-        if 'variable' in self.config:
+        if 'variables' in self.config:
             for variable in self.config['variables']:
                 if variable['secret']:
                     self.logger.info("Verifying variable %s with value xxxxxxxxxx" % variable['name'])
