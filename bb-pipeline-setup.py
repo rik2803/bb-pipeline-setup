@@ -195,11 +195,13 @@ class bb_pipeline_config:
             else:
                 self.logger.info("Repo successfully created")
 
-        if not self.repo.has_pipelinefile():
-            self.repo.create_pipeline_file(self.create_bb_file_from_template(self.config['pipeline_template']))
-
-        if not self.repo.is_pipeline_enabled():
-            self.repo.enable_pipeline()
+        if 'pipeline_template' in self.config:
+            if not self.repo.has_pipelinefile():
+                self.repo.create_pipeline_file(self.create_bb_file_from_template(self.config['pipeline_template']))
+            if not self.repo.is_pipeline_enabled():
+                self.repo.enable_pipeline()
+        else:
+            self.logger.info("No pipeline_template in config - skipping pipeline config")
 
         self.add_pipeline_variables()
         self.ssh_add_keypair()
@@ -221,13 +223,16 @@ class bb_pipeline_config:
             self.logger.info("Configuration does not contains private or public key, skip adding ssh keypair")
 
     def add_pipeline_variables(self):
-        for variable in self.config['variables']:
-            if variable['secret']:
-                self.logger.info("Verifying variable %s with value xxxxxxxxxx" % variable['name'])
-            else:
-                self.logger.info("Verifying variable %s with value %s" % (variable['name'], variable['value']))
-
-            self.repo.add_or_update_pipeline_variable(variable['name'], variable['value'], variable['secret'])
+        if 'variable' in self.config:
+            for variable in self.config['variables']:
+                if variable['secret']:
+                    self.logger.info("Verifying variable %s with value xxxxxxxxxx" % variable['name'])
+                else:
+                    self.logger.info("Verifying variable %s with value %s" % (variable['name'], variable['value']))
+    
+                self.repo.add_or_update_pipeline_variable(variable['name'], variable['value'], variable['secret'])
+        else:
+            self.logger.info("No variables in config - skipping variables config")
 
     def read_config(self):
         with open(self.args.configfile, 'r') as stream:
