@@ -1,0 +1,35 @@
+image: python
+
+pipelines:
+  branches:
+    develop:
+      - step:
+          name: Build and push Docker artefact image
+          script:
+            - git clone https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib.bash
+            - docker_build
+  tags:
+    rc*:
+      - step:
+          name: Build and push Docker Release Candidate image
+          script:
+            - git clone https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib.bash
+            - docker_build
+            - export REMOTE_REPO_OWNER="tryx"
+            - export REMOTE_REPO_SLUG="dockertest.config.acc"
+            - bb-aws-utils/sync_trigger_bb_build.bash
+    v*:
+      - step:
+          name: Build and push Docker artefact image
+          script:
+            - git clone https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib.bash
+            - docker_build
+            - export REMOTE_REPO_OWNER="tryx"
+            - export REMOTE_REPO_SLUG="dockertest.config.prd"
+            - bb-aws-utils/sync_trigger_bb_build.bash
+
+options:
+  docker: true

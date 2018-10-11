@@ -1,0 +1,15 @@
+image: python
+
+pipelines:
+  custom:
+    build_and_deploy:
+      - step:
+          name: Build and push Docker deploy image
+          script:
+            - git clone https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib.bash
+            - docker_build_deploy_image
+            - docker_tag_and_push_deploy_image
+
+options:
+  docker: true
