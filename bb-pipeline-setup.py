@@ -4,6 +4,7 @@ import requests
 import yaml
 import json
 import os
+import sys
 import pprint
 import logging
 import jinja2
@@ -208,10 +209,10 @@ class bb_pipeline_config:
         self.ssh_add_keypair()
 
 
-    def create_bb_file_from_template(self, template):
-        templateLoader = jinja2.FileSystemLoader(searchpath="./pipeline_templates")
+    def create_bb_file_from_template(self, template_name):
+        templateLoader = jinja2.FileSystemLoader(searchpath=os.path.dirname(sys.argv[0]) + "/pipeline_templates")
         templateEnv = jinja2.Environment(loader=templateLoader)
-        template = templateEnv.get_template(template)
+        template = templateEnv.get_template(template_name)
         return(template.render(repo_slug=self.config['repo']['slug'], repo_owner=self.config['repo']['owner']))
 
 
