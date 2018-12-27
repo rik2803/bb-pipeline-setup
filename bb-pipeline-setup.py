@@ -210,7 +210,8 @@ class bb_pipeline_config:
 
 
     def create_bb_file_from_template(self, template_name):
-        templateLoader = jinja2.FileSystemLoader(searchpath=os.path.dirname(sys.argv[0]) + "/pipeline_templates")
+        #templateLoader = jinja2.FileSystemLoader(searchpath=os.path.dirname(sys.argv[0]) + "/pipeline_templates")
+        templateLoader = jinja2.FileSystemLoader("pipeline_templates")
         templateEnv = jinja2.Environment(loader=templateLoader)
         template = templateEnv.get_template(template_name)
         return(template.render(repo_slug=self.config['repo']['slug'], repo_owner=self.config['repo']['owner']))
