@@ -1,0 +1,15 @@
+image: atlassian/pipelines-awscli
+
+pipelines:
+  custom:
+    create_deleted_tagged_cfn_stacks:
+      - step:
+          name: Create all deleted CloudFormation Stacks that have the tag stack_deletion_order
+          script:
+            - >
+              aws ecs run-task \
+                --task-definition task-create-deleted-tagged-cfn-stacks \
+                --cluster ecs-sandbox-mgmt \
+                --network-configuration "awsvpcConfiguration={subnets=[${SUBNET}],securityGroups=[${SG}]}" \
+                --launch-type "FARGATE"
+
