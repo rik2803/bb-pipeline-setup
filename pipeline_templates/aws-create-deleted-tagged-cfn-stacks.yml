@@ -9,7 +9,7 @@ pipelines:
             - >
               aws ecs run-task \
                 --task-definition task-create-deleted-tagged-cfn-stacks \
-                --cluster ecs-sandbox-mgmt \
+                --cluster ${ECS_MGMT_CLUSTER} \
                 --network-configuration "awsvpcConfiguration={subnets=[${SUBNET}],securityGroups=[${SG}]}" \
                 --launch-type "FARGATE"
 
