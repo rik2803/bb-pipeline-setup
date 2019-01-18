@@ -1,0 +1,14 @@
+image: maven:3.6-jdk-8-alpine
+pipelines:
+  custom:
+    release_build:
+      - step:
+          name: Maven Release
+          caches:
+            - maven
+          script:
+            - apk update && apk add git openssh
+            - git config --global user.email "bitbucketpipeline@changeme.be"
+            - git config --global user.name "Bitbucket Pipeline"
+            - bash makesettings.sh
+            - mvn --batch-mode -Dresume=false release:prepare release:perform
