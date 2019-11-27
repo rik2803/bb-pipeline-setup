@@ -25,7 +25,7 @@ class repo:
         self.logger.info("API Endpoint URL is " + self.api_endpoint_base)
 
     def check_environment(self):
-        if os.environ.has_key('BB_USER') and os.environ.has_key('BB_APP_PASSWD'):
+        if os.environ.get('BB_USER') and os.environ.get('BB_APP_PASSWD'):
             self.bb_user = os.environ.get('BB_USER')
             self.bb_app_passwd = os.environ.get('BB_APP_PASSWD')
         else:
@@ -46,8 +46,10 @@ class repo:
     def repo_create(self):
         headers = {'Content-type': 'application/json'}
         if self.project_key is None:
+            self.logger.info(f"No project key was set in the config")
             payload = { "scm": "git", "is_private": "true" }
         else:
+            self.logger.info(f"Putting repo in {self.project_key} project")
             payload = { "scm": "git", "is_private": "true", "project": { "key": self.project_key } }
 
         response = requests.put(self.api_endpoint_base, auth=(self.bb_user, self.bb_app_passwd), data=json.dumps(payload), headers=headers)
@@ -185,8 +187,8 @@ class bb_pipeline_config:
         if self.args.verbose:
             self.logger.setLevel(logging.DEBUG)
 
-        if 'repo' in self.config and 'project_key' in self.config['repo']:
-            self.repo = repo(self.logger, self.config['repo']['slug'], self.config['repo']['owner'], self.config['repo']['project_key'])
+        if 'repo' in self.config and 'project' in self.config['repo']:
+            self.repo = repo(self.logger, self.config['repo']['slug'], self.config['repo']['owner'], self.config['repo']['project'])
         else:
             self.repo = repo(self.logger, self.config['repo']['slug'], self.config['repo']['owner'], None)
 
