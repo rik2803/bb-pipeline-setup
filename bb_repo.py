@@ -1,16 +1,8 @@
-
-import argparse
 import requests
-import yaml
 import json
 import os
-import sys
-import pprint
-import logging
-import jinja2
 
-
-class repo:
+class Repo:
 
     def __init__(self, logger, repo_slug, repo_owner, project_key):
         self.logger = logger
@@ -174,112 +166,13 @@ class repo:
         self.logger.debug('ssh_add_keypair: %i' % response.status_code)
         self.logger.debug('ssh_add_keypair: %s' % response.content)
 
-class bb_pipeline_config:
-
-    def __init__(self):
-        self.name = 'bb-pipeline-setup'
-
-        self.setup_logger()
-        self.logger.info('Starting bb-pipeline-setup')
-        self.parse_cli_args()
-        self.read_config()
-
-        if self.args.verbose:
-            self.logger.setLevel(logging.DEBUG)
-
-        if 'repo' in self.config and 'project' in self.config['repo']:
-            self.repo = repo(self.logger, self.config['repo']['slug'], self.config['repo']['owner'], self.config['repo']['project'])
+    def branch_exists(self, branch):
+        response = requests.get(f"{self.api_endpoint_base}/refs/branches/{branch}", auth=(self.bb_user, self.bb_app_passwd))
+        dictresponse = json.loads(response.content)
+        if response.status_code != 200:
+            self.logger.error(f"Branch {branch} does not exist.")
+            self.logger.error(dictresponse)
+            return False
         else:
-            self.repo = repo(self.logger, self.config['repo']['slug'], self.config['repo']['owner'], None)
-
-        if not self.repo.repo_exists():
-            if not self.repo.repo_create():
-                self.logger.error("Error creating repo - giving up")
-                exit(1)
-            else:
-                self.logger.info("Repo successfully created")
-
-        if 'pipeline_template' in self.config:
-            if not self.repo.has_pipelinefile():
-                self.repo.create_pipeline_file(self.create_bb_file_from_template(self.config['pipeline_template']))
-            if not self.repo.is_pipeline_enabled():
-                self.repo.enable_pipeline()
-        else:
-            self.logger.info("No pipeline_template in config - skipping pipeline config")
-
-        self.add_pipeline_variables()
-        self.ssh_add_keypair()
-
-
-    def create_bb_file_from_template(self, template_name):
-        #templateLoader = jinja2.FileSystemLoader(searchpath=os.path.dirname(sys.argv[0]) + "/pipeline_templates")
-        templateLoader = jinja2.FileSystemLoader("pipeline_templates")
-        templateEnv = jinja2.Environment(loader=templateLoader)
-        template = templateEnv.get_template(template_name)
-        return(template.render(repo_slug=self.config['repo']['slug'], repo_owner=self.config['repo']['owner']))
-
-
-    def ssh_add_keypair(self):
-        self.logger.info("Verifying if ssh keypair needs to be added and add it")
-        if 'ssh' in self.config and 'privatekey' in self.config['ssh'] and 'publickey' in self.config['ssh']:
-            self.logger.info("Configuration contains private and public key, continue to add the key to the pipeline config")
-            self.repo.ssh_add_keypair(self.config['ssh']['privatekey'], self.config['ssh']['publickey'])
-        else:
-            self.logger.info("Configuration does not contain private or public key, skip adding ssh keypair")
-
-    def add_pipeline_variables(self):
-        if 'variables' in self.config:
-            for variable in self.config['variables']:
-                if variable['secret']:
-                    self.logger.info("Verifying variable %s with value xxxxxxxxxx" % variable['name'])
-                else:
-                    self.logger.info("Verifying variable %s with value %s" % (variable['name'], variable['value']))
-    
-                self.repo.add_or_update_pipeline_variable(variable['name'], variable['value'], variable['secret'])
-        else:
-            self.logger.info("No variables in config - skipping variables config")
-
-    def read_config(self):
-        with open(self.args.configfile, 'r') as stream:
-            try:
-                self.config = yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                print(exc)
-
-        self.logger.info("Configuration dump")
-        self.logger.info(self.config)
-
-    def setup_logger(self):
-        self.logger = logging.getLogger(self.name)
-        self.logger.setLevel(logging.INFO)
-
-        fh = logging.FileHandler('./' + self.name + '.log')
-        ch = logging.StreamHandler()
-
-        formatter_file = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        formatter_stderr = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-        fh.setFormatter(formatter_file)
-        fh.setLevel(logging.DEBUG)
-
-        ch.setFormatter(formatter_stderr)
-        ch.setLevel(logging.DEBUG)
-
-        self.logger.addHandler(fh)
-        self.logger.addHandler(ch)
-
-    def parse_cli_args(self):
-        """ Command line argument processing """
-        help = {'verbose': 'More verbose output',
-                'configfile': 'The configuration file',
-                }
-
-        parser = argparse.ArgumentParser(prog='bb-pipeline-setup',
-                                         description='Configure the BB pipeline setup for a project')
-
-        parser.add_argument('-v', '--verbose', action='store_true', default=False, help=help['verbose'])
-        parser.add_argument('-f', '--configfile', action='store', required=True, help=help['configfile'])
-
-        self.args = parser.parse_args()
-
-bb_pipeline_config()
+            self.logger.info(f"Branch {branch} exists")
+            return True

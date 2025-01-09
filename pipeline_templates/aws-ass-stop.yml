@@ -4,12 +4,12 @@ pipelines:
   custom:
     aws_ass_stop:
       - step:
-          name: Delete all CloudFormation Stacks that have the tag stack_deletion_order
+          name: Create all deleted CloudFormation Stacks that have the tag stack_deletion_order
           script:
             - >
               aws ecs run-task \
                 --task-definition task-aws-ass-stop \
                 --cluster ${ECS_MGMT_CLUSTER} \
                 --network-configuration "awsvpcConfiguration={subnets=[${SUBNET}],securityGroups=[${SG}]}" \
-                --launch-type "FARGATE"
-
+                --launch-type "FARGATE" \
+                --overrides "{\"containerOverrides\": [{\"name\": \"aws-ass-stop\", \"environment\": [{\"name\": \"CHATURL\", \"value\": \"${CHATURL}\"}, {\"name\": \"ECS_MGMT_CLUSTER\", \"value\": \"${ECS_MGMT_CLUSTER}\"}]}]}"

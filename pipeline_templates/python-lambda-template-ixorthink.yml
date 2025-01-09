@@ -1,0 +1,12 @@
+image: python:3.6
+pipelines:
+  branches:
+    master:
+      - step:
+          name: Build the lambda function package publish to S3
+          caches:
+            - pip
+          script:
+            - git clone https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib.bash
+            - s3_lambda_build_and_push

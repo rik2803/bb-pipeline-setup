@@ -1,0 +1,18 @@
+image: ixor/aws-sam
+
+pipelines:
+  branches:
+    master:
+      - step:
+          name: Build Lambda zip-in-zip layer
+          script:
+            - git clone https://bitbucket.org/ixorcvba/ixor.lambda.layer.builder.git
+            - cp requirements.txt ixor.lambda.layer.builder/function/requirements.txt
+            - cd ixor.lambda.layer.builder/layer
+            - ./create_layer_zipfile.sh
+            - LZN_NOEXTENSION=${LAYER_ZIP_NAME%%.zip}
+            - aws s3 cp ${LAYER_ZIP_NAME} s3://${S3_BUCKET}/${LAYER_ZIP_NAME}
+            - aws s3 cp ${LAYER_ZIP_NAME} s3://${S3_BUCKET}/${LZN_NOEXTENSION}-${BITBUCKET_COMMIT}.zip
+
+options:
+  docker: true

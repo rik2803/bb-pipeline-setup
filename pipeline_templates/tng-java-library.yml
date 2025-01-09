@@ -1,0 +1,32 @@
+# Pipeline for a Java library
+#   * the artifact will be uploaded to AWS CodeArtifact
+#
+# Optionally, you may need to update the build image to suit the Java version you wish to use
+
+image: ixor/amazoncorretto-maven:11.0.3-3.6.2
+
+pipelines:
+  pull-requests:
+    'feature/**':
+      - step:
+          name: "Build and publish a snapshot version"
+          caches:
+            - maven
+          artifacts:
+            - artifacts/**
+          script:
+            - git clone -b ${BB_AWS_UTILS_VERSION:-master} https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib/load.bash
+            - maven_build
+  branches:
+    master:
+      - step:
+          name: "Build a release version"
+          caches:
+            - maven
+          artifacts:
+            - artifacts/**
+          script:
+            - git clone -b ${BB_AWS_UTILS_VERSION:-master} https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib/load.bash
+            - maven_release_build

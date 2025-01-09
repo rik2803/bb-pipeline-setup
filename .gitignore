@@ -1,5 +1,11 @@
+.env/
 setenv.bash
 *.log
 examples
 .idea
 MYREADME.md
+bb-pipeline-setup-ecr-creds-only.py
+bb-pipeline-setup-sshonly.py
+__pycache__/
+testconfigs/
+

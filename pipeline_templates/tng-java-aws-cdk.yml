@@ -1,0 +1,68 @@
+# Pipeline for a Java service
+#   * the resulting docker image can run as-is on the different environments (i.e. no environment specific config in the image)
+#   * the deploy is done using aws-cdk, this requires the infrastructure to be setup using an aws-cdk project 
+#
+# Change these placeholders before running the pipeline:
+#   * __SERVICE_ACCOUNT__: Used to determine the AWS credentials to use to deploy the service, i.e. IXOR_VDL_TST
+#   * __AWS_CDK_REPO_NAME__: The name of the repository that contains the IaC for the project
+#   * __DOCKER_IMAGE_NAME__: The name of the docker image to use for the deploy. The tag is determined automatically (i.e. ixor/myvandelanotte-portal-api)
+#
+# Optionally, you may need to update the build image to suit the Java version you wish to use
+
+image: ixor/amazoncorretto-maven:11.0.3-3.6.2
+
+pipelines:
+  pull-requests:
+    'feature/**':
+      - step:
+          name: "Build a snapshot version"
+          caches:
+            - maven
+          artifacts:
+            - artifacts/**
+          script:
+            - git clone -b ${BB_AWS_UTILS_VERSION:-master} https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib/load.bash
+            - maven_build
+      - step:
+          name: "Deploy to AWS"
+          image: node:14.16.0
+          script:
+            - git clone -b ${BB_AWS_UTILS_VERSION:-master} https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib/load.bash
+            - aws_cdk_deploy "__SERVICE_ACCOUNT__" "git@bitbucket.org:ixorcvba/__AWS_CDK_REPO_NAME__.git" "tst" "678053966837.dkr.ecr.eu-central-1.amazonaws.com/__DOCKER_IMAGE_NAME__"
+  branches:
+    master:
+      - step:
+          name: "Build a release version"
+          caches:
+            - maven
+          artifacts:
+            - artifacts/**
+          script:
+            - git clone -b ${BB_AWS_UTILS_VERSION:-master} https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib/load.bash
+            - maven_release_build
+      - step:
+          name: "Deploy to stg"
+          image: node:14.16.0
+          caches:
+            - maven
+          script:
+            - git clone -b ${BB_AWS_UTILS_VERSION:-master} https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib/load.bash
+            - aws_cdk_deploy "__SERVICE_ACCOUNT__" "git@bitbucket.org:ixorcvba/__AWS_CDK_REPO_NAME__.git" "stg" "678053966837.dkr.ecr.eu-central-1.amazonaws.com/__DOCKER_IMAGE_NAME__"
+      - step:
+          name: "Deploy to prd"
+          image: node:14.16.0
+          trigger: manual
+          caches:
+            - maven
+          script:
+            - git clone -b ${BB_AWS_UTILS_VERSION:-master} https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib/load.bash
+            - aws_cdk_deploy "__SERVICE_ACCOUNT__" "git@bitbucket.org:ixorcvba/__AWS_CDK_REPO_NAME__.git" "prd" "678053966837.dkr.ecr.eu-central-1.amazonaws.com/__DOCKER_IMAGE_NAME__"
+
+options:
+  docker: true
+

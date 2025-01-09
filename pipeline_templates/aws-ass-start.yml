@@ -11,5 +11,5 @@ pipelines:
                 --task-definition task-aws-ass-start \
                 --cluster ${ECS_MGMT_CLUSTER} \
                 --network-configuration "awsvpcConfiguration={subnets=[${SUBNET}],securityGroups=[${SG}]}" \
-                --launch-type "FARGATE"
-
+                --launch-type "FARGATE" \
+                --overrides "{\"containerOverrides\": [{\"name\": \"aws-ass-start\", \"environment\": [{\"name\": \"CHATURL\", \"value\": \"${CHATURL}\"}, {\"name\": \"ECS_MGMT_CLUSTER\", \"value\": \"${ECS_MGMT_CLUSTER}\"}]}]}"

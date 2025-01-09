@@ -1,0 +1,12 @@
+image: maven:3-jdk-8-alpine
+pipelines:
+  branches:
+    master:
+      - step:
+          name: Build the lambda function package and publish to S3
+          caches:
+            - maven
+          script:
+            - git clone https://github.com/rik2803/bb-aws-utils.git
+            - source bb-aws-utils/lib.bash
+            - s3_lambda_build_and_push
